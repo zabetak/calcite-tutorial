@@ -29,14 +29,14 @@ extensions around these components covering some common use-cases appearing in p
 
 ## Requirements
 
-* JDK version >= 1.8
-* Apache Maven version >= 3.6.3
+* JDK version >= 8
 
 ## Quickstart
 
-To compile the project run:
-`mvn package`
+To compile the project, run:
 
-To run the end to end example:
+    ./mvnw package
+
+To run the end-to-end example:
 
     java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar EndToEndExampleEnumerable
