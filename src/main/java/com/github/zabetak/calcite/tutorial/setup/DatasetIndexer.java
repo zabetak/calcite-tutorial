@@ -70,7 +70,7 @@ public class DatasetIndexer {
 
   private static void indexTable(final String dataset, TpchTable table)
       throws IOException {
-    String tablePath = DATASET_LOCATION + "/" + dataset + "/" + table.name().toLowerCase().concat(".tbl");
+    String tablePath = DATASET_LOCATION + "/" + dataset + "/" + table.name().toLowerCase().concat(".csv");
     try (Directory indexDir = FSDirectory.open(Paths.get(INDEX_LOCATION, dataset, table.name()))) {
       IndexWriterConfig writerConfig = new IndexWriterConfig(new StandardAnalyzer());
       writerConfig.setOpenMode(OpenMode.CREATE);
