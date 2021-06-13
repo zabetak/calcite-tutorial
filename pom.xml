@@ -16,6 +16,7 @@
     <assembly-plugin.version>3.3.0</assembly-plugin.version>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+    <rat-plugin.version>0.13</rat-plugin.version>
   </properties>
   <dependencies>
     <dependency>
@@ -84,6 +85,24 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${rat-plugin.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>src/main/resources/data/**/*.csv</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
