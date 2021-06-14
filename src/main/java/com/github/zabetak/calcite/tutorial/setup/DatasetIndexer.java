@@ -45,7 +45,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
- * A class for indexing predefined datasets in Lucene.
+ * A class for indexing predefined datasets in Apache Lucene.
  *
  * The following datasets are available:
  * <ul>
