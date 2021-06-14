@@ -34,7 +34,7 @@ public enum TpchTable {
    *   C_PHONE      CHAR(15),
    *   C_ACCTBAL    DECIMAL,
    *   C_MKTSEGMENT CHAR(10),
-   *   C_COMMENT    VARCHAR(117))    
+   *   C_COMMENT    VARCHAR(117))
    * </pre>
    */
   CUSTOMER(Arrays.asList(
@@ -49,9 +49,9 @@ public enum TpchTable {
   /**
    * <pre>
    * CREATE TABLE LINEITEM (
-   * 	L_ORDERKEY		INT NOT NULL, 
-   * 	L_PARTKEY		INT NOT NULL, 
-   * 	L_SUPPKEY		INT NOT NULL, 
+   * 	L_ORDERKEY		INT NOT NULL,
+   * 	L_PARTKEY		INT NOT NULL,
+   * 	L_SUPPKEY		INT NOT NULL,
    * 	L_LINENUMBER	INT,
    * 	L_QUANTITY		DECIMAL,
    * 	L_EXTENDEDPRICE	DECIMAL,
@@ -199,6 +199,9 @@ public enum TpchTable {
     this.columns = columns;
   }
 
+  /**
+   * A table column defined by a name and type.
+   */
   public static final class Column {
     public final String name;
     public final Class<?> type;

@@ -29,10 +29,12 @@
     <lucene.version>8.8.2</lucene.version>
     <opencsv.version>2.4</opencsv.version>
     <jupiter.version>5.7.2</jupiter.version>
+    <checkstyle.version>8.43</checkstyle.version>
     <assembly-plugin.version>3.3.0</assembly-plugin.version>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <rat-plugin.version>0.13</rat-plugin.version>
+    <checkstyle-plugin.version>3.1.2</checkstyle-plugin.version>
   </properties>
   <dependencies>
     <dependency>
@@ -113,6 +115,34 @@
         </configuration>
         <executions>
           <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle-plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>${checkstyle.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <encoding>UTF-8</encoding>
+          <consoleOutput>true</consoleOutput>
+          <failsOnError>true</failsOnError>
+          <linkXRef>false</linkXRef>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate</id>
             <phase>validate</phase>
             <goals>
               <goal>check</goal>

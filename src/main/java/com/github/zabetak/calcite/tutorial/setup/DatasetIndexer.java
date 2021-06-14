@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -71,7 +70,8 @@ public class DatasetIndexer {
 
   private static void indexTable(final String dataset, TpchTable table)
       throws IOException {
-    String tablePath = DATASET_LOCATION + "/" + dataset + "/" + table.name().toLowerCase().concat(".csv");
+    final String tablePath =
+        DATASET_LOCATION + "/" + dataset + "/" + table.name().toLowerCase().concat(".csv");
     try (Directory indexDir = FSDirectory.open(Paths.get(INDEX_LOCATION, dataset, table.name()))) {
       IndexWriterConfig writerConfig = new IndexWriterConfig(new StandardAnalyzer());
       writerConfig.setOpenMode(OpenMode.CREATE);
@@ -109,13 +109,15 @@ public class DatasetIndexer {
     } else if (Date.class == column.type) {
       LocalDate date = LocalDate.parse(value, FORMATTER);
       doc.add(new StoredField(column.name, date.toString()));
-      doc.add(new LongPoint(column.name, ZonedDateTime.of(date, LocalTime.MIDNIGHT, ZoneOffset.UTC).toEpochSecond()));
+      doc.add(new LongPoint(column.name,
+          ZonedDateTime.of(date, LocalTime.MIDNIGHT, ZoneOffset.UTC).toEpochSecond()));
     } else {
       throw new IllegalStateException();
     }
   }
 
   private static Reader getResourceAsReader(String path) {
-    return new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(path));
+    return new InputStreamReader(
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(path));
   }
 }
