@@ -25,7 +25,7 @@ import java.util.List;
  */
 public enum TpchTable {
   /**
-   * <pre>
+   * <pre>{@code
    * CREATE TABLE CUSTOMER (
    *   C_CUSTKEY    INT NOT NULL,
    *   C_NAME       VARCHAR(25),
@@ -35,7 +35,7 @@ public enum TpchTable {
    *   C_ACCTBAL    DECIMAL,
    *   C_MKTSEGMENT CHAR(10),
    *   C_COMMENT    VARCHAR(117))
-   * </pre>
+   * }</pre>
    */
   CUSTOMER(Arrays.asList(
       new Column("c_custkey", Integer.class),
@@ -47,7 +47,7 @@ public enum TpchTable {
       new Column("c_mktsegment", String.class),
       new Column("c_comment", String.class))),
   /**
-   * <pre>
+   * <pre>{@code
    * CREATE TABLE LINEITEM (
    * 	L_ORDERKEY		INT NOT NULL,
    * 	L_PARTKEY		INT NOT NULL,
@@ -65,7 +65,7 @@ public enum TpchTable {
    * 	L_SHIPINSTRUCT	CHAR(25),
    * 	L_SHIPMODE		CHAR(10),
    * 	L_COMMENT		VARCHAR(44))
-   * </pre>
+   * }</pre>
    */
   LINEITEM(Arrays.asList(
       new Column("l_orderkey", Integer.class),
@@ -85,6 +85,7 @@ public enum TpchTable {
       new Column("l_shipmode", String.class),
       new Column("l_comment", String.class))),
   /**
+   * <pre>{@code
    * CREATE TABLE ORDERS (
    * 	O_ORDERKEY      INT NOT NULL,
    * 	O_CUSTKEY       INT NOT NULL,
@@ -95,6 +96,7 @@ public enum TpchTable {
    * 	O_CLERK         CHAR(15),
    * 	O_SHIPPRIORITY  INT,
    * 	O_COMMENT       VARCHAR(79))
+   * 	}</pre>
    */
   ORDERS(Arrays.asList(
       new Column("o_orderkey", Integer.class),
@@ -107,13 +109,13 @@ public enum TpchTable {
       new Column("o_shippriority", Integer.class),
       new Column("o_comment", String.class))),
   /**
-   * <pre>
+   * <pre>{@code
    * CREATE TABLE NATION (
    *   N_NATIONKEY INT NOT NULL,
    *   N_NAME      CHAR(25),
    *   N_REGIONKEY INT NOT NULL,
    *   N_COMMENT   VARCHAR(152))
-   * </pre>
+   * }</pre>
    */
   NATION(Arrays.asList(
       new Column("n_nationkey", Integer.class),
@@ -121,7 +123,7 @@ public enum TpchTable {
       new Column("n_regionkey", Integer.class),
       new Column("n_comment", String.class))),
   /**
-   * <pre>
+   * <pre>{@code
    * CREATE TABLE part(
    *   p_partkey INT NOT NULL,
    *   p_name STRING,
@@ -132,7 +134,7 @@ public enum TpchTable {
    *   p_container STRING,
    *   p_retailprice DOUBLE,
    *   p_comment STRING)
-   * </pre>
+   * }</pre>
    */
   PART(Arrays.asList(
       new Column("p_partkey", Integer.class),
@@ -145,14 +147,14 @@ public enum TpchTable {
       new Column("p_retailprice", Double.class),
       new Column("p_comment", String.class))),
   /**
-   * <pre>
+   * <pre>{@code
    *   CREATE TABLE PARTSUPP(
    *   PS_PARTKEY    INT NOT NULL,
    *   PS_SUPPKEY    INT NOT NULL,
    *   PS_AVAILQTY   INT,
    *   PS_SUPPLYCOST DECIMAL,
    *   PS_COMMENT    VARCHAR(199))
-   * </pre>
+   * }</pre>
    */
   PARTSUPP(Arrays.asList(
       new Column("ps_partkey", Integer.class),
@@ -161,19 +163,19 @@ public enum TpchTable {
       new Column("ps_supplycost", Double.class),
       new Column("ps_comment", String.class))),
   /**
-   * <pre>
+   * <pre>{@code
    * CREATE TABLE REGION (
    *   R_REGIONKEY INT NOT NULL,
    *   R_NAME      CHAR(25),
    *   R_COMMENT   VARCHAR(152))
-   * </pre>
+   * }</pre>
    */
   REGION(Arrays.asList(
       new Column("r_regionkey", Integer.class),
       new Column("r_name", String.class),
       new Column("r_comment", String.class))),
   /**
-   * <pre>
+   * <pre>{@code
    * CREATE TABLE SUPPLIER (
    * 	S_SUPPKEY   INT NOT NULL,
    * 	S_NAME      CHAR(25),
@@ -182,7 +184,7 @@ public enum TpchTable {
    * 	S_PHONE     CHAR(15),
    * 	S_ACCTBAL   DECIMAL,
    * 	S_COMMENT   VARCHAR(101))
-   * </pre>
+   * }</pre>
    */
   SUPPLIER(Arrays.asList(
       new Column("s_suppkey", Integer.class),
