@@ -48,4 +48,6 @@ To load/index the TPC-H dataset in Lucene, run:
 
     java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.setup.DatasetIndexer
     
-The indexer creates the data under `target/tpch` directory.
+The indexer creates the data under `target/tpch` directory. The TPC-H dataset was generated using
+the dbgen command line utility (`dbgen -s 0.001`) provided in the original
+[TPC-H tools](http://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) bundle.

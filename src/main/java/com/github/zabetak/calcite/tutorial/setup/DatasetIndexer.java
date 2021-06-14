@@ -49,7 +49,7 @@ import java.util.Date;
  *
  * The following datasets are available:
  * <ul>
- *   <li>TPC-H</li>
+ *   <li>TPC-H with scale factor 0.001</li>
  * </ul>
  *
  * The indexer reads data from CSV files and creates a single Lucene index per file. The indexes
