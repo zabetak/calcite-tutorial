@@ -21,7 +21,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
@@ -37,12 +36,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 /**
  * A class for indexing predefined datasets in Apache Lucene.
@@ -59,7 +55,7 @@ import java.util.Date;
 public class DatasetIndexer {
   private static final char DELIMITER = '|';
   private static final String DATASET_LOCATION = "data";
-  static final String INDEX_LOCATION = "target";
+  public static final String INDEX_LOCATION = "target";
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   public static void main(String[] args) throws IOException, URISyntaxException {
@@ -107,10 +103,9 @@ public class DatasetIndexer {
       doc.add(new StoredField(column.name, dblVal));
       doc.add(new DoublePoint(column.name, dblVal));
     } else if (Date.class == column.type) {
-      LocalDate date = LocalDate.parse(value, FORMATTER);
-      doc.add(new StoredField(column.name, date.toString()));
-      doc.add(new LongPoint(column.name,
-          ZonedDateTime.of(date, LocalTime.MIDNIGHT, ZoneOffset.UTC).toEpochSecond()));
+      int epochDays = Math.toIntExact(LocalDate.parse(value, FORMATTER).toEpochDay());
+      doc.add(new StoredField(column.name, epochDays));
+      doc.add(new IntPoint(column.name, epochDays));
     } else {
       throw new IllegalStateException();
     }
