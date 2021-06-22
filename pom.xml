@@ -111,6 +111,7 @@
         <configuration>
           <excludes>
             <exclude>src/main/resources/data/**/*.csv</exclude>
+            <exclude>queries/**/*.sql</exclude>
           </excludes>
         </configuration>
         <executions>
