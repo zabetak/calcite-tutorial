@@ -25,7 +25,7 @@
   <version>1.0-SNAPSHOT</version>
 
   <properties>
-    <calcite.version>1.26.0</calcite.version>
+    <calcite.version>1.27.0</calcite.version>
     <lucene.version>8.8.2</lucene.version>
     <opencsv.version>2.4</opencsv.version>
     <jupiter.version>5.7.2</jupiter.version>
@@ -45,6 +45,11 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-queryparser</artifactId>
       <version>${lucene.version}</version>
     </dependency>
     <dependency>
