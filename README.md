@@ -52,9 +52,14 @@ The indexer creates the data under `target/tpch` directory. The TPC-H dataset wa
 the dbgen command line utility (`dbgen -s 0.001`) provided in the original
 [TPC-H tools](http://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) bundle.
 
-To run the simple end-to-end example with the data in Lucene, run:
+To run queries over the data in Lucene, you can use one of the available query processors:
 
-    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.EndToEndExampleLuceneSimple queries/tpch/Q0.sql
+* `SIMPLE` processor, which uses exclusively one Calcite convention
+* `ADVANCED` processor, which uses two conventions opening the road for complex integration and
+
+
+    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner SIMPLE queries/tpch/Q0.sql
+    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner ADVANCED queries/tpch/Q0.sql
 
 You can use one of the predefined queries under `queries/tpch` directory or create a new file
 and write your own. 

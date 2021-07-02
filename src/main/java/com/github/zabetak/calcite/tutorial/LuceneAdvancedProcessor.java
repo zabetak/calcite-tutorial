@@ -80,10 +80,6 @@ import com.github.zabetak.calcite.tutorial.setup.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.setup.TpchTable;
 
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -95,27 +91,7 @@ import java.util.Properties;
  * An end to end example from an SQL query to a plan over Lucene indexes using Calcite's
  * {@link EnumerableConvention} and a custom convention.
  */
-public class EndToEndExampleLuceneAdvanced {
-
-  public static void main(String[] args) throws Exception {
-    if (args.length != 1) {
-      System.out.println("Missing path to SQL input file");
-      System.exit(-1);
-    }
-    String sqlQuery = new String(Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8);
-
-    System.out.println("[Results]");
-    long start = System.currentTimeMillis();
-    for (Object row : EndToEndExampleLuceneAdvanced.execute(sqlQuery)) {
-      if (row instanceof Object[]) {
-        System.out.println(Arrays.toString((Object[]) row));
-      } else {
-        System.out.println(row);
-      }
-    }
-    long finish = System.currentTimeMillis();
-    System.out.println("Elapsed time " + (finish - start) + "ms");
-  }
+public class LuceneAdvancedProcessor {
 
   /**
    * Plans and executes an SQL query.

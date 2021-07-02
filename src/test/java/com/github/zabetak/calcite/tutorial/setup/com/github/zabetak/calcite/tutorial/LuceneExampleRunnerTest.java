@@ -19,12 +19,13 @@ package com.github.zabetak.calcite.tutorial.setup.com.github.zabetak.calcite.tut
 import org.apache.calcite.linq4j.Enumerable;
 import org.apache.calcite.sql.parser.SqlParseException;
 
-import com.github.zabetak.calcite.tutorial.EndToEndExampleLuceneAdvanced;
+import com.github.zabetak.calcite.tutorial.LuceneExampleRunner;
 import com.github.zabetak.calcite.tutorial.setup.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.setup.TpchTable;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -42,9 +43,9 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests for {@link EndToEndExampleLuceneAdvanced}.
+ * Tests for end to end tests over Apache Lucene.
  */
-public class EndToEndExampleLuceneAdvancedTest {
+public class LuceneExampleRunnerTest {
 
   @BeforeAll
   static void indexTpchDataset() throws IOException, URISyntaxException {
@@ -52,12 +53,13 @@ public class EndToEndExampleLuceneAdvancedTest {
     DatasetIndexer.main(new String[]{});
   }
 
-  @Test
-  void testPredefinedTpchQueriesRun() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  void testPredefinedTpchQueriesRun(String processor) throws Exception {
     Files.walkFileTree(Paths.get("queries", "tpch"), new SimpleFileVisitor<Path>() {
       @Override public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
         try {
-          EndToEndExampleLuceneAdvanced.main(new String[]{file.toString()});
+          LuceneExampleRunner.main(new String[]{processor, file.toString()});
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -66,15 +68,17 @@ public class EndToEndExampleLuceneAdvancedTest {
     });
   }
 
-  @Test
-  void testFullScanTpchTablesRuns() throws SqlParseException {
+  @ParameterizedTest
+  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  void testFullScanTpchTablesRuns(String processor) throws SqlParseException {
     for (TpchTable t : TpchTable.values()) {
-      EndToEndExampleLuceneAdvanced.execute("SELECT * FROM " + t.name());
+      LuceneExampleRunner.runQuery(processor, "SELECT * FROM " + t.name());
     }
   }
 
-  @Test
-  void testCountTpchTables() throws SqlParseException {
+  @ParameterizedTest
+  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  void testCountTpchTables(String processor) throws SqlParseException {
     Map<TpchTable, Long> expectedCounts = new HashMap<>();
     expectedCounts.put(TpchTable.CUSTOMER, 150L);
     expectedCounts.put(TpchTable.LINEITEM, 6005L);
@@ -85,14 +89,16 @@ public class EndToEndExampleLuceneAdvancedTest {
     expectedCounts.put(TpchTable.REGION, 5L);
     expectedCounts.put(TpchTable.SUPPLIER, 10L);
     for (TpchTable t : TpchTable.values()) {
-      Enumerable<Long> result = EndToEndExampleLuceneAdvanced.execute("SELECT COUNT(1) FROM " + t.name());
+      Enumerable<Long> result = (Enumerable<Long>) LuceneExampleRunner.runQuery(processor,
+          "SELECT COUNT(1) FROM " + t.name());
       Long actualCnt = result.iterator().next();
       assertEquals(expectedCounts.get(t), actualCnt);
     }
   }
 
-  @Test
-  void testFilterOnPKAllColumnsValueTypesMatch() throws SqlParseException {
+  @ParameterizedTest
+  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  void testFilterOnPKAllColumnsValueTypesMatch(String processor) throws SqlParseException {
     Map<String, Object[]> queryToRow = new HashMap<>();
     queryToRow.put("CUSTOMER WHERE c_custkey = 32", new Object[]{
         32,
@@ -152,7 +158,7 @@ public class EndToEndExampleLuceneAdvancedTest {
     for (Map.Entry<String, Object[]> q2r : queryToRow.entrySet()) {
       String query = "SELECT * FROM " + q2r.getKey();
       Object[] expectedRow = q2r.getValue();
-      assertArrayEquals(expectedRow, EndToEndExampleLuceneAdvanced.<Object[]>execute(query).single());
+      assertArrayEquals(expectedRow, (Object[]) LuceneExampleRunner.runQuery(processor, query).single());
     }
   }
 }

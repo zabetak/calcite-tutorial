@@ -17,13 +17,14 @@
 package com.github.zabetak.calcite.tutorial;
 
 import org.apache.calcite.DataContext;
+import org.apache.calcite.adapter.enumerable.EnumerableConvention;
+import org.apache.calcite.adapter.enumerable.EnumerableInterpretable;
+import org.apache.calcite.adapter.enumerable.EnumerableRel;
+import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
-import org.apache.calcite.interpreter.BindableConvention;
-import org.apache.calcite.interpreter.BindableRel;
-import org.apache.calcite.interpreter.Bindables;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.linq4j.Enumerable;
@@ -36,10 +37,12 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.rules.CoreRules;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.runtime.Bindable;
 import org.apache.calcite.schema.ScannableTable;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.impl.AbstractTable;
@@ -58,36 +61,17 @@ import org.apache.calcite.sql2rel.StandardConvertletTable;
 import com.github.zabetak.calcite.tutorial.setup.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.setup.TpchTable;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
 /**
  * An end to end example from an SQL query to a plan over Lucene indexes using Calcite's
- * {@link org.apache.calcite.interpreter.BindableConvention}.
+ * {@link org.apache.calcite.adapter.enumerable.EnumerableConvention}.
  */
-public class EndToEndExampleLuceneSimple {
-
-  public static void main(String[] args) throws Exception {
-    if (args.length != 1) {
-      System.out.println("Missing path to SQL input file");
-      System.exit(-1);
-    }
-    String sqlQuery = new String(Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8);
-
-    System.out.println("[Results]");
-    long start = System.currentTimeMillis();
-    for (Object[] row : execute(sqlQuery)) {
-      System.out.println(Arrays.toString(row));
-    }
-    long finish = System.currentTimeMillis();
-    System.out.println("Elapsed time " + (finish - start) + "ms");
-  }
+public class LuceneSimpleProcessor {
 
   /**
    * Plans and executes an SQL query.
@@ -96,7 +80,7 @@ public class EndToEndExampleLuceneSimple {
    * @return an Enumerable with the results of the execution of the query
    * @throws SqlParseException if there is a problem when parsing the query
    */
-  public static Enumerable<Object[]> execute(String sqlQuery) throws SqlParseException {
+  public static <T> Enumerable<T> execute(String sqlQuery) throws SqlParseException {
     System.out.println("[Input query]");
     System.out.println(sqlQuery);
 
@@ -155,33 +139,43 @@ public class EndToEndExampleLuceneSimple {
 
     // Initialize optimizer/planner with the necessary rules
     RelOptPlanner planner = cluster.getPlanner();
-    planner.addRule(Bindables.BINDABLE_TABLE_SCAN_RULE);
-    planner.addRule(Bindables.BINDABLE_PROJECT_RULE);
-    planner.addRule(Bindables.BINDABLE_FILTER_RULE);
-    planner.addRule(Bindables.BINDABLE_JOIN_RULE);
-    planner.addRule(Bindables.BINDABLE_SORT_RULE);
-    planner.addRule(Bindables.BINDABLE_AGGREGATE_RULE);
-    planner.addRule(Bindables.BINDABLE_VALUES_RULE);
-    planner.addRule(Bindables.BINDABLE_SET_OP_RULE);
-    planner.addRule(Bindables.BINDABLE_MATCH_RULE);
-    planner.addRule(Bindables.BINDABLE_WINDOW_RULE);
+    planner.addRule(CoreRules.PROJECT_TO_CALC);
+    planner.addRule(CoreRules.FILTER_TO_CALC);
+    planner.addRule(EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_CALC_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_JOIN_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_SORT_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_LIMIT_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_AGGREGATE_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_VALUES_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_UNION_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_MINUS_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_INTERSECT_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_MATCH_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_WINDOW_RULE);
 
     // Define the type of the output plan (in this case we want a physical plan in
     // EnumerableContention)
     logPlan = planner.changeTraits(logPlan,
-        cluster.traitSet().replace(BindableConvention.INSTANCE));
+        cluster.traitSet().replace(EnumerableConvention.INSTANCE));
     planner.setRoot(logPlan);
     // Start the optimization process to obtain the most efficient physical plan based on the
     // provided rule set.
-    BindableRel phyPlan = (BindableRel) planner.findBestExp();
+    EnumerableRel phyPlan = (EnumerableRel) planner.findBestExp();
 
     // Display the physical plan
     System.out.println(
         RelOptUtil.dumpPlan("[Physical plan]", phyPlan, SqlExplainFormat.TEXT,
             SqlExplainLevel.NON_COST_ATTRIBUTES));
 
+    // Obtain the executable plan
+    Bindable<T> executablePlan = EnumerableInterpretable.toBindable(
+        new HashMap<>(),
+        null,
+        phyPlan,
+        EnumerableRel.Prefer.ARRAY);
     // Run the executable plan using a context simply providing access to the schema
-    return phyPlan.bind(new SchemaOnlyDataContext(schema));
+    return executablePlan.bind(new SchemaOnlyDataContext(schema));
   }
 
   /**
