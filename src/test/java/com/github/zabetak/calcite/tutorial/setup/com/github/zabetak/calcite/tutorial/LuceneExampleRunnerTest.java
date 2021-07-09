@@ -54,7 +54,7 @@ public class LuceneExampleRunnerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
   void testPredefinedTpchQueriesRun(String processor) throws Exception {
     Files.walkFileTree(Paths.get("queries", "tpch"), new SimpleFileVisitor<Path>() {
       @Override public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
@@ -69,7 +69,7 @@ public class LuceneExampleRunnerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
   void testFullScanTpchTablesRuns(String processor) throws SqlParseException {
     for (TpchTable t : TpchTable.values()) {
       LuceneExampleRunner.runQuery(processor, "SELECT * FROM " + t.name());
@@ -77,7 +77,7 @@ public class LuceneExampleRunnerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
   void testCountTpchTables(String processor) throws SqlParseException {
     Map<TpchTable, Long> expectedCounts = new HashMap<>();
     expectedCounts.put(TpchTable.CUSTOMER, 150L);
@@ -97,7 +97,7 @@ public class LuceneExampleRunnerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED"})
+  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
   void testFilterOnPKAllColumnsValueTypesMatch(String processor) throws SqlParseException {
     Map<String, Object[]> queryToRow = new HashMap<>();
     queryToRow.put("CUSTOMER WHERE c_custkey = 32", new Object[]{

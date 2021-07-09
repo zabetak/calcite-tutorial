@@ -32,6 +32,7 @@ import java.util.Arrays;
  * <ul>
  *   <li>{@link LuceneSimpleProcessor}</li>
  *   <li>{@link LuceneAdvancedProcessor}</li>
+ *   <li>{@link LucenePushdownProcessor}</li>
  * </ul>
  */
 public class LuceneExampleRunner {
@@ -61,6 +62,8 @@ public class LuceneExampleRunner {
       return LuceneSimpleProcessor.execute(query);
     } else if (processorType.equalsIgnoreCase("ADVANCED")) {
       return LuceneAdvancedProcessor.execute(query);
+    } else if (processorType.equalsIgnoreCase("PUSHDOWN")) {
+      return LucenePushdownProcessor.execute(query);
     } else {
       throw new IllegalArgumentException("Unsupported processor type: " + processorType);
     }

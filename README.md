@@ -55,11 +55,15 @@ the dbgen command line utility (`dbgen -s 0.001`) provided in the original
 To run queries over the data in Lucene, you can use one of the available query processors:
 
 * `SIMPLE` processor, which uses exclusively one Calcite convention
-* `ADVANCED` processor, which uses two conventions opening the road for complex integration and
+* `ADVANCED` processor, which uses two conventions, demonstrates the basis for creating a federated
+query engine over different backends.
+* `PUSHDOWN` processor, builds upon the `ADVANCED` processor, and outlines how to implement
+rules to perform some common optimizations such as pushing filters to the underlying engine.
 
 
     java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner SIMPLE queries/tpch/Q0.sql
     java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner ADVANCED queries/tpch/Q0.sql
+    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner PUSHDOWN queries/tpch/Q0.sql
 
 You can use one of the predefined queries under `queries/tpch` directory or create a new file
 and write your own. 

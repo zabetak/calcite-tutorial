@@ -25,6 +25,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+import org.apache.lucene.queryparser.flexible.standard.config.PointsConfig;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -33,9 +34,11 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Date;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +63,16 @@ public class LuceneEnumerable extends AbstractEnumerable<Object[]> {
   private List<Object[]> searchIndex() {
     Query q;
     try {
-      q = new StandardQueryParser().parse(query,"");
+      StandardQueryParser parser = new StandardQueryParser();
+      Map<String, PointsConfig> config = new HashMap<>();
+      for (Map.Entry<String, SqlTypeName> field : fields.entrySet()) {
+        PointsConfig pconf = configForType(field.getValue());
+        if (pconf != null) {
+          config.put(field.getKey(), pconf);
+        }
+      }
+      parser.setPointsConfigMap(config);
+      q = parser.parse(query, "");
     } catch (QueryNodeException e) {
       throw new RuntimeException(e);
     }
@@ -105,4 +117,22 @@ public class LuceneEnumerable extends AbstractEnumerable<Object[]> {
     }
     return null;
   }
+
+  private static PointsConfig configForType(SqlTypeName typeName) {
+    switch (typeName) {
+    case TINYINT:
+    case SMALLINT:
+    case BIGINT:
+    case INTEGER:
+    case DATE:
+      return new PointsConfig(NumberFormat.getNumberInstance(), Integer.class);
+    case DOUBLE:
+    case FLOAT:
+    case DECIMAL:
+      return new PointsConfig(NumberFormat.getNumberInstance(), Double.class);
+    default:
+      return null;
+    }
+  }
+
 }
