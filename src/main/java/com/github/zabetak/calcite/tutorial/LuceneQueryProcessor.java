@@ -16,19 +16,16 @@
  */
 package com.github.zabetak.calcite.tutorial;
 
-import org.apache.calcite.DataContext;
 import org.apache.calcite.adapter.enumerable.EnumerableConvention;
 import org.apache.calcite.adapter.enumerable.EnumerableInterpretable;
 import org.apache.calcite.adapter.enumerable.EnumerableRel;
 import org.apache.calcite.adapter.enumerable.EnumerableRules;
-import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.linq4j.Enumerable;
-import org.apache.calcite.linq4j.QueryProvider;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -40,19 +37,14 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rules.CoreRules;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.runtime.Bindable;
-import org.apache.calcite.schema.ScannableTable;
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.schema.impl.AbstractTable;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
@@ -61,17 +53,67 @@ import org.apache.calcite.sql2rel.StandardConvertletTable;
 import com.github.zabetak.calcite.tutorial.setup.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.setup.TpchTable;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
- * An end to end example from an SQL query to a plan over Lucene indexes using Calcite's
- * {@link org.apache.calcite.adapter.enumerable.EnumerableConvention}.
+ * Query processor for running TPC-H queries over Apache Lucene.
  */
-public class LuceneSimpleProcessor {
+public class LuceneQueryProcessor {
+
+  /**
+   * The type of query processor.
+   */
+  public enum Type {
+    /**
+     * Simple query processor using only one convention.
+     *
+     * The processor relies on {@link org.apache.calcite.adapter.enumerable.EnumerableConvention}
+     * and the {@link org.apache.calcite.schema.ScannableTable} interface to execute queries over
+     * Lucene.
+     */
+    SIMPLE,
+    /**
+     * Advanced query processor using two conventions.
+     *
+     * The processor relies on {@link org.apache.calcite.adapter.enumerable.EnumerableConvention}
+     * and {@link LuceneRel#LUCENE} to execute queries over Lucene.
+     */
+    ADVANCED,
+    /**
+     * Advanced query processor using two conventions and extra rules capable of pushing basic
+     * conditions in Lucene.
+     *
+     * The processor relies on {@link org.apache.calcite.adapter.enumerable.EnumerableConvention}
+     * and {@link LuceneRel#LUCENE} to execute queries over Lucene.
+     */
+    PUSHDOWN
+  }
+
+  public static void main(String[] args) throws Exception {
+    if (args.length != 2) {
+      System.out.println("Usage: runner [SIMPLE|ADVANCED] SQL_FILE");
+      System.exit(-1);
+    }
+    Type pType = Type.valueOf(args[0]);
+    String sqlQuery = new String(Files.readAllBytes(Paths.get(args[1])), StandardCharsets.UTF_8);
+    System.out.println("[Results]");
+    long start = System.currentTimeMillis();
+    for (Object row : execute(sqlQuery, pType)) {
+      if (row instanceof Object[]) {
+        System.out.println(Arrays.toString((Object[]) row));
+      } else {
+        System.out.println(row);
+      }
+    }
+    long finish = System.currentTimeMillis();
+    System.out.println("Elapsed time " + (finish - start) + "ms");
+  }
 
   /**
    * Plans and executes an SQL query.
@@ -80,7 +122,8 @@ public class LuceneSimpleProcessor {
    * @return an Enumerable with the results of the execution of the query
    * @throws SqlParseException if there is a problem when parsing the query
    */
-  public static <T> Enumerable<T> execute(String sqlQuery) throws SqlParseException {
+  public static <T> Enumerable<T> execute(String sqlQuery, Type processorType)
+      throws SqlParseException {
     System.out.println("[Input query]");
     System.out.println(sqlQuery);
 
@@ -91,10 +134,18 @@ public class LuceneSimpleProcessor {
       RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
       for (TpchTable.Column column : table.columns) {
         RelDataType type = typeFactory.createJavaType(column.type);
-        builder.add(column.name, type).nullable(true);
+        builder.add(column.name, type.getSqlTypeName()).nullable(true);
       }
       String indexPath = DatasetIndexer.INDEX_LOCATION + "/tpch/" + table.name();
-      schema.add(table.name(), new LuceneTable(indexPath, builder.build()));
+      switch (processorType) {
+      case SIMPLE:
+        schema.add(table.name(), new LuceneScannableTable(indexPath, builder.build()));
+        break;
+      case ADVANCED:
+      case PUSHDOWN:
+        schema.add(table.name(), new LuceneBasicTable(indexPath, builder.build()));
+        break;
+      }
     }
 
     // Create an SQL parser
@@ -139,20 +190,31 @@ public class LuceneSimpleProcessor {
 
     // Initialize optimizer/planner with the necessary rules
     RelOptPlanner planner = cluster.getPlanner();
-    planner.addRule(CoreRules.PROJECT_TO_CALC);
-    planner.addRule(CoreRules.FILTER_TO_CALC);
-    planner.addRule(EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_CALC_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_JOIN_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_SORT_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_LIMIT_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_AGGREGATE_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_VALUES_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_UNION_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_MINUS_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_INTERSECT_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_MATCH_RULE);
-    planner.addRule(EnumerableRules.ENUMERABLE_WINDOW_RULE);
+    switch (processorType) {
+    case PUSHDOWN:
+      planner.addRule(LuceneFilterRule.DEFAULT.toRule());
+    case ADVANCED:
+      planner.addRule(LuceneTableScanRule.DEFAULT.toRule());
+      planner.addRule(LuceneEnumerableConverterRule.DEFAULT.toRule());
+    case SIMPLE:
+      planner.addRule(CoreRules.PROJECT_TO_CALC);
+      planner.addRule(CoreRules.FILTER_TO_CALC);
+      planner.addRule(EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_CALC_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_JOIN_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_SORT_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_LIMIT_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_AGGREGATE_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_VALUES_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_UNION_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_MINUS_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_INTERSECT_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_MATCH_RULE);
+      planner.addRule(EnumerableRules.ENUMERABLE_WINDOW_RULE);
+      break;
+    default:
+      throw new AssertionError();
+    }
 
     // Define the type of the output plan (in this case we want a physical plan in
     // EnumerableContention)
@@ -178,34 +240,6 @@ public class LuceneSimpleProcessor {
     return executablePlan.bind(new SchemaOnlyDataContext(schema));
   }
 
-  /**
-   * Table representing an Apache Lucene index.
-   *
-   * The table implements the {@link ScannableTable} interface and knows how to extract rows
-   * from Lucene and map them to Calcite's internal representation.
-   */
-  private static final class LuceneTable extends AbstractTable implements ScannableTable {
-    private final String indexPath;
-    private final RelDataType dataType;
-
-    LuceneTable(String indexPath, RelDataType dataType) {
-      this.indexPath = indexPath;
-      this.dataType = dataType;
-    }
-
-    @Override public Enumerable<Object[]> scan(final DataContext root) {
-      Map<String, SqlTypeName> fields = new LinkedHashMap<>();
-      for (RelDataTypeField f : dataType.getFieldList()) {
-        fields.put(f.getName(), f.getType().getSqlTypeName());
-      }
-      return new LuceneEnumerable(indexPath, fields, "*:*");
-    }
-
-    @Override public RelDataType getRowType(final RelDataTypeFactory typeFactory) {
-      return typeFactory.copyType(dataType);
-    }
-  }
-
   private static RelOptCluster newCluster(RelDataTypeFactory factory) {
     RelOptPlanner planner = new VolcanoPlanner();
     planner.addRelTraitDef(ConventionTraitDef.INSTANCE);
@@ -213,31 +247,4 @@ public class LuceneSimpleProcessor {
   }
 
   private static final RelOptTable.ViewExpander NOOP_EXPANDER = (type, query, schema, path) -> null;
-
-  /**
-   * A simple data context only with schema information.
-   */
-  private static final class SchemaOnlyDataContext implements DataContext {
-    private final SchemaPlus schema;
-
-    SchemaOnlyDataContext(CalciteSchema calciteSchema) {
-      this.schema = calciteSchema.plus();
-    }
-
-    @Override public SchemaPlus getRootSchema() {
-      return schema;
-    }
-
-    @Override public JavaTypeFactory getTypeFactory() {
-      return new JavaTypeFactoryImpl();
-    }
-
-    @Override public QueryProvider getQueryProvider() {
-      return null;
-    }
-
-    @Override public Object get(final String name) {
-      return null;
-    }
-  }
 }

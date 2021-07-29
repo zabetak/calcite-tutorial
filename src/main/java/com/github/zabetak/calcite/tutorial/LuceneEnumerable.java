@@ -44,6 +44,15 @@ import java.util.Map;
 
 /**
  * A class providing enumerators over an Apache Lucene index.
+ *
+ * The class holds all the necessary logic to extract data from a Lucene index, transform it to rows
+ * using Calcite's internal representation, and construct Enumerator objects, which can be consumed
+ * by Calcite's {@link org.apache.calcite.adapter.enumerable.EnumerableRel} (physical) operators.
+ *
+ * Performance note: The class could be optimized to not fetch in-memory all the results from the
+ * index by exploiting some additional Lucene APIs such as
+ * {@link IndexSearcher#searchAfter(ScoreDoc, Query, int)}. This is not done in the current
+ * implementation to keep the implementation as simple as possible.
  */
 public class LuceneEnumerable extends AbstractEnumerable<Object[]> {
   private final String indexPath;
@@ -61,21 +70,7 @@ public class LuceneEnumerable extends AbstractEnumerable<Object[]> {
   }
 
   private List<Object[]> searchIndex() {
-    Query q;
-    try {
-      StandardQueryParser parser = new StandardQueryParser();
-      Map<String, PointsConfig> config = new HashMap<>();
-      for (Map.Entry<String, SqlTypeName> field : fields.entrySet()) {
-        PointsConfig pconf = configForType(field.getValue());
-        if (pconf != null) {
-          config.put(field.getKey(), pconf);
-        }
-      }
-      parser.setPointsConfigMap(config);
-      q = parser.parse(query, "");
-    } catch (QueryNodeException e) {
-      throw new RuntimeException(e);
-    }
+    Query q = createQuery();
     try (IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)))) {
       IndexSearcher searcher = new IndexSearcher(reader);
       List<Object[]> result = new ArrayList<>();
@@ -92,6 +87,24 @@ public class LuceneEnumerable extends AbstractEnumerable<Object[]> {
     } catch (IOException exception) {
       // If the index is not found or for some reason we cannot read it consider the table empty
       return Collections.emptyList();
+    }
+  }
+
+  private Query createQuery() {
+    try {
+      StandardQueryParser parser = new StandardQueryParser();
+      Map<String, PointsConfig> config = new HashMap<>();
+      for (Map.Entry<String, SqlTypeName> field : fields.entrySet()) {
+        // Instruct Lucene which fields should be treated as numeric by creating appropriate confs
+        PointsConfig conf = configForType(field.getValue());
+        if (conf != null) {
+          config.put(field.getKey(), conf);
+        }
+      }
+      parser.setPointsConfigMap(config);
+      return parser.parse(query, "");
+    } catch (QueryNodeException e) {
+      throw new RuntimeException(e);
     }
   }
 

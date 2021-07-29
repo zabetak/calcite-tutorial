@@ -29,7 +29,10 @@ import org.apache.lucene.search.Query;
 
 /**
  * Translate row expressions ({@link org.apache.calcite.rex.RexNode}) to Apache Lucene queries
- * {@link Query}.
+ * ({@link Query}).
+ *
+ * The translator assumes the expression is in some normalized form. At its current state it cannot
+ * translate arbitrary Calcite expressions.
  */
 public final class RexToLuceneTranslator extends RexVisitorImpl<Query> {
   private final Filter filter;

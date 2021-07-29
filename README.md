@@ -53,9 +53,9 @@ query engine over different backends.
 rules to perform some common optimizations such as pushing filters to the underlying engine.
 
 
-    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner SIMPLE queries/tpch/Q0.sql
-    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner ADVANCED queries/tpch/Q0.sql
-    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneExampleRunner PUSHDOWN queries/tpch/Q0.sql
+    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneQueryProcessor SIMPLE queries/tpch/Q0.sql
+    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneQueryProcessor ADVANCED queries/tpch/Q0.sql
+    java -cp target/calcite-tutorial-1.0-SNAPSHOT-jar-with-dependencies.jar com.github.zabetak.calcite.tutorial.LuceneQueryProcessor PUSHDOWN queries/tpch/Q0.sql
 
 You can use one of the predefined queries under `queries/tpch` directory or create a new file
 and write your own. 

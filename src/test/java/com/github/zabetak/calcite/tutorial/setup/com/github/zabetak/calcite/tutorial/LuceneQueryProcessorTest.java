@@ -19,12 +19,13 @@ package com.github.zabetak.calcite.tutorial.setup.com.github.zabetak.calcite.tut
 import org.apache.calcite.linq4j.Enumerable;
 import org.apache.calcite.sql.parser.SqlParseException;
 
-import com.github.zabetak.calcite.tutorial.LuceneExampleRunner;
+import com.github.zabetak.calcite.tutorial.LuceneQueryProcessor;
 import com.github.zabetak.calcite.tutorial.setup.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.setup.TpchTable;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Tests for end to end tests over Apache Lucene.
  */
-public class LuceneExampleRunnerTest {
+public class LuceneQueryProcessorTest {
 
   @BeforeAll
   static void indexTpchDataset() throws IOException, URISyntaxException {
@@ -59,7 +60,7 @@ public class LuceneExampleRunnerTest {
     Files.walkFileTree(Paths.get("queries", "tpch"), new SimpleFileVisitor<Path>() {
       @Override public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
         try {
-          LuceneExampleRunner.main(new String[]{processor, file.toString()});
+          LuceneQueryProcessor.main(new String[]{processor, file.toString()});
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -69,16 +70,16 @@ public class LuceneExampleRunnerTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
-  void testFullScanTpchTablesRuns(String processor) throws SqlParseException {
+  @EnumSource(LuceneQueryProcessor.Type.class)
+  void testFullScanTpchTablesRuns(LuceneQueryProcessor.Type processor) throws SqlParseException {
     for (TpchTable t : TpchTable.values()) {
-      LuceneExampleRunner.runQuery(processor, "SELECT * FROM " + t.name());
+      LuceneQueryProcessor.execute("SELECT * FROM " + t.name(), processor);
     }
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
-  void testCountTpchTables(String processor) throws SqlParseException {
+  @EnumSource(LuceneQueryProcessor.Type.class)
+  void testCountTpchTables(LuceneQueryProcessor.Type processor) throws SqlParseException {
     Map<TpchTable, Long> expectedCounts = new HashMap<>();
     expectedCounts.put(TpchTable.CUSTOMER, 150L);
     expectedCounts.put(TpchTable.LINEITEM, 6005L);
@@ -89,16 +90,16 @@ public class LuceneExampleRunnerTest {
     expectedCounts.put(TpchTable.REGION, 5L);
     expectedCounts.put(TpchTable.SUPPLIER, 10L);
     for (TpchTable t : TpchTable.values()) {
-      Enumerable<Long> result = (Enumerable<Long>) LuceneExampleRunner.runQuery(processor,
-          "SELECT COUNT(1) FROM " + t.name());
+      Enumerable<Long> result = LuceneQueryProcessor.execute(
+          "SELECT COUNT(1) FROM " + t.name(), processor);
       Long actualCnt = result.iterator().next();
       assertEquals(expectedCounts.get(t), actualCnt);
     }
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SIMPLE", "ADVANCED", "PUSHDOWN"})
-  void testFilterOnPKAllColumnsValueTypesMatch(String processor) throws SqlParseException {
+  @EnumSource(LuceneQueryProcessor.Type.class)
+  void testFilterOnPKAllColumnsValueTypesMatch(LuceneQueryProcessor.Type processor) throws SqlParseException {
     Map<String, Object[]> queryToRow = new HashMap<>();
     queryToRow.put("CUSTOMER WHERE c_custkey = 32", new Object[]{
         32,
@@ -158,7 +159,7 @@ public class LuceneExampleRunnerTest {
     for (Map.Entry<String, Object[]> q2r : queryToRow.entrySet()) {
       String query = "SELECT * FROM " + q2r.getKey();
       Object[] expectedRow = q2r.getValue();
-      assertArrayEquals(expectedRow, (Object[]) LuceneExampleRunner.runQuery(processor, query).single());
+      assertArrayEquals(expectedRow, (Object[]) LuceneQueryProcessor.execute(query, processor).single());
     }
   }
 }
