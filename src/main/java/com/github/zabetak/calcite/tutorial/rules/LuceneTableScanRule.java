@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.rules;
 
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.ConverterRule;
 import org.apache.calcite.rel.logical.LogicalTableScan;
 
+import com.github.zabetak.calcite.tutorial.operators.LuceneTableScan;
+import com.github.zabetak.calcite.tutorial.schema.LuceneTable;
+
 import java.util.Collections;
 
-import static com.github.zabetak.calcite.tutorial.LuceneRel.LUCENE;
+import static com.github.zabetak.calcite.tutorial.operators.LuceneRel.LUCENE;
 
 /**
  * Rule to convert a {@link LogicalTableScan} to a {@link LuceneTableScan} if possible.
@@ -50,7 +53,7 @@ public final class LuceneTableScanRule extends ConverterRule {
     super(config);
   }
 
-  static final Config DEFAULT = Config.INSTANCE
+  public static final Config DEFAULT = Config.INSTANCE
       .withConversion(LogicalTableScan.class, Convention.NONE,
           LUCENE, "LuceneTableScanRule")
       .withRuleFactory(LuceneTableScanRule::new);

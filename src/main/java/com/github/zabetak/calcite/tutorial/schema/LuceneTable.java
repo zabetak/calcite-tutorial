@@ -1,4 +1,4 @@
-/*
+package com.github.zabetak.calcite.tutorial.schema;/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,32 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
 
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.schema.impl.AbstractTable;
+import org.apache.calcite.schema.Table;
+
 
 /**
  * Table representing an Apache Lucene index.
- *
- * The table corresponds to a basic implementation of the {@link LuceneTable} interface
- * merely wrapping the path to the Lucene index.
  */
-public final class LuceneBasicTable extends AbstractTable implements LuceneTable {
-  private final String indexPath;
-  private final RelDataType dataType;
-
-  LuceneBasicTable(String indexPath, RelDataType dataType) {
-    this.indexPath = indexPath;
-    this.dataType = dataType;
-  }
-
-  @Override public RelDataType getRowType(final RelDataTypeFactory typeFactory) {
-    return typeFactory.copyType(dataType);
-  }
-
-  @Override public String indexPath() {
-    return indexPath;
-  }
+public interface LuceneTable extends Table {
+  /**
+   * Returns the path to the index in the filesystem.
+   */
+  String indexPath();
 }

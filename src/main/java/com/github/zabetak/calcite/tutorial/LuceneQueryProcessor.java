@@ -16,16 +16,19 @@
  */
 package com.github.zabetak.calcite.tutorial;
 
+import org.apache.calcite.DataContext;
 import org.apache.calcite.adapter.enumerable.EnumerableConvention;
 import org.apache.calcite.adapter.enumerable.EnumerableInterpretable;
 import org.apache.calcite.adapter.enumerable.EnumerableRel;
 import org.apache.calcite.adapter.enumerable.EnumerableRules;
+import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.linq4j.QueryProvider;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -39,6 +42,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.runtime.Bindable;
+import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
@@ -50,6 +54,12 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 
+import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
+import com.github.zabetak.calcite.tutorial.rules.LuceneEnumerableConverterRule;
+import com.github.zabetak.calcite.tutorial.rules.LuceneFilterRule;
+import com.github.zabetak.calcite.tutorial.rules.LuceneTableScanRule;
+import com.github.zabetak.calcite.tutorial.schema.LuceneBasicTable;
+import com.github.zabetak.calcite.tutorial.schema.LuceneScannableTable;
 import com.github.zabetak.calcite.tutorial.setup.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.setup.TpchTable;
 
@@ -247,4 +257,31 @@ public class LuceneQueryProcessor {
   }
 
   private static final RelOptTable.ViewExpander NOOP_EXPANDER = (type, query, schema, path) -> null;
+
+  /**
+   * A simple data context only with schema information.
+   */
+  private static final class SchemaOnlyDataContext implements DataContext {
+    private final SchemaPlus schema;
+
+    SchemaOnlyDataContext(CalciteSchema calciteSchema) {
+      this.schema = calciteSchema.plus();
+    }
+
+    @Override public SchemaPlus getRootSchema() {
+      return schema;
+    }
+
+    @Override public JavaTypeFactory getTypeFactory() {
+      return new JavaTypeFactoryImpl();
+    }
+
+    @Override public QueryProvider getQueryProvider() {
+      return null;
+    }
+
+    @Override public Object get(final String name) {
+      return null;
+    }
+  }
 }

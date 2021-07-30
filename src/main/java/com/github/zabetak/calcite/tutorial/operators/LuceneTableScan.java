@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.operators;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
@@ -22,6 +22,8 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.hint.RelHint;
 import org.apache.lucene.search.MatchAllDocsQuery;
+
+import com.github.zabetak.calcite.tutorial.schema.LuceneTable;
 
 import java.util.List;
 
@@ -31,7 +33,7 @@ import java.util.List;
  * The expression knows where is the Lucene index located and how to access it.
  */
 public final class LuceneTableScan extends TableScan implements LuceneRel {
-  protected LuceneTableScan(final RelOptCluster cluster, final RelTraitSet traitSet,
+  public LuceneTableScan(final RelOptCluster cluster, final RelTraitSet traitSet,
       final List<RelHint> hints, final RelOptTable table) {
     super(cluster, traitSet, hints, table);
   }

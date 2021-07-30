@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.rules;
 
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -30,11 +30,13 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 
+import com.github.zabetak.calcite.tutorial.operators.LuceneFilter;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Set;
 
-import static com.github.zabetak.calcite.tutorial.LuceneRel.LUCENE;
+import static com.github.zabetak.calcite.tutorial.operators.LuceneRel.LUCENE;
 
 /**
  * Rule to convert a {@link LogicalFilter} to a {@link LuceneFilter} if possible.
@@ -79,7 +81,7 @@ public final class LuceneFilterRule extends ConverterRule {
     return new LuceneFilter(filter.getCluster(), newInput, filter.getCondition());
   }
 
-  static final Config DEFAULT = Config.INSTANCE
+  public static final Config DEFAULT = Config.INSTANCE
       .withConversion(LogicalFilter.class, Convention.NONE, LUCENE, "LuceneFilterRule")
       .withRuleFactory(LuceneFilterRule::new);
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.operators;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
@@ -32,7 +32,7 @@ import org.apache.lucene.search.Query;
  * representation to the respective {@link Query} object in Lucene.
  */
 public class LuceneFilter extends Filter implements LuceneRel {
-  protected LuceneFilter(RelOptCluster cluster, RelNode child, RexNode condition) {
+  public LuceneFilter(RelOptCluster cluster, RelNode child, RexNode condition) {
     super(cluster, cluster.traitSetOf(LUCENE), child, condition);
   }
 

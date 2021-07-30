@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.schema;
 
 import org.apache.calcite.DataContext;
 import org.apache.calcite.linq4j.Enumerable;
@@ -24,6 +24,8 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.schema.ScannableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+
+import com.github.zabetak.calcite.tutorial.LuceneEnumerable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,7 +41,7 @@ public final class LuceneScannableTable extends AbstractTable
   private final String indexPath;
   private final RelDataType dataType;
 
-  LuceneScannableTable(String indexPath, RelDataType dataType) {
+  public LuceneScannableTable(String indexPath, RelDataType dataType) {
     this.indexPath = indexPath;
     this.dataType = dataType;
   }

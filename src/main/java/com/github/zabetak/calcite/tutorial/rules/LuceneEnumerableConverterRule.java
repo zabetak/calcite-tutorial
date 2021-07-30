@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.rules;
 
 import org.apache.calcite.adapter.enumerable.EnumerableConvention;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.ConverterRule;
 
-import static com.github.zabetak.calcite.tutorial.LuceneRel.LUCENE;
+import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
+import com.github.zabetak.calcite.tutorial.operators.LuceneEnumerableConverter;
+
+import static com.github.zabetak.calcite.tutorial.operators.LuceneRel.LUCENE;
 
 /**
  * Planner rule converting any kind of {@link LuceneRel} expression to

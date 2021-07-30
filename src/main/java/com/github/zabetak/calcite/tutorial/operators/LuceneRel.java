@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial;
+package com.github.zabetak.calcite.tutorial.operators;
 
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.rel.RelNode;
