@@ -47,7 +47,7 @@ public class LuceneQueryProcessor {
       System.out.println("Usage: processor SQL_FILE");
       System.exit(-1);
     }
-    String sqlQuery = new String(Files.readAllBytes(Paths.get(args[1])), StandardCharsets.UTF_8);
+    String sqlQuery = new String(Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8);
 
     // TODO 1. Create the root schema and type factory
     // TODO 2. Create the data type for each TPC-H table
