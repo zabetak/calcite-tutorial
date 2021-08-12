@@ -35,9 +35,12 @@ public final class LuceneEnumerableConverter {
   // TODO 2. Implement RelNode.copy
   // TODO 3. Implement EnumerableRel interface
   // TODO 4. Implement EnumerableRel#implement method
-  // TODO 4a. Generate code to create LinkedHashMap holding column name, datatype pairs
-  // TODO 4b. Generate code to instantiate LuceneEnumerable and pass:
-  // i)   index path,
-  // ii)  column/type mapping,
-  // iii) Lucene query as string
+  //  The generated java code should resemble the snippet below:
+  //  java.util.LinkedHashMap fields = new java.util.LinkedHashMap();
+  //  fields.put("ps_partkey", org.apache.calcite.sql.type.SqlTypeName.INTEGER);
+  //  fields.put("ps_suppkey", org.apache.calcite.sql.type.SqlTypeName.INTEGER);
+  //  fields.put("ps_availqty", org.apache.calcite.sql.type.SqlTypeName.INTEGER);
+  //  fields.put("ps_supplycost", org.apache.calcite.sql.type.SqlTypeName.DOUBLE);
+  //  fields.put("ps_comment", org.apache.calcite.sql.type.SqlTypeName.VARCHAR);
+  //  return new LuceneEnumerable("target/tpch/PARTSUPP", fields, "*:*");
 }
