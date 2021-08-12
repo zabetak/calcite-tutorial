@@ -54,14 +54,12 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 
+import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
+import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
 import com.github.zabetak.calcite.tutorial.rules.LuceneEnumerableConverterRule;
 import com.github.zabetak.calcite.tutorial.rules.LuceneFilterRule;
 import com.github.zabetak.calcite.tutorial.rules.LuceneTableScanRule;
-import com.github.zabetak.calcite.tutorial.schema.LuceneBasicTable;
-import com.github.zabetak.calcite.tutorial.schema.LuceneScannableTable;
-import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
-import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -147,15 +145,7 @@ public class LuceneQueryProcessor {
         builder.add(column.name, type.getSqlTypeName()).nullable(true);
       }
       String indexPath = DatasetIndexer.INDEX_LOCATION + "/tpch/" + table.name();
-      switch (processorType) {
-      case SIMPLE:
-        schema.add(table.name(), new LuceneScannableTable(indexPath, builder.build()));
-        break;
-      case ADVANCED:
-      case PUSHDOWN:
-        schema.add(table.name(), new LuceneBasicTable(indexPath, builder.build()));
-        break;
-      }
+      schema.add(table.name(), new LuceneTable(indexPath, builder.build()));
     }
 
     // Create an SQL parser
@@ -200,27 +190,29 @@ public class LuceneQueryProcessor {
 
     // Initialize optimizer/planner with the necessary rules
     RelOptPlanner planner = cluster.getPlanner();
+    planner.addRule(CoreRules.PROJECT_TO_CALC);
+    planner.addRule(CoreRules.FILTER_TO_CALC);
+    planner.addRule(EnumerableRules.ENUMERABLE_CALC_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_JOIN_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_SORT_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_LIMIT_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_AGGREGATE_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_VALUES_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_UNION_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_MINUS_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_INTERSECT_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_MATCH_RULE);
+    planner.addRule(EnumerableRules.ENUMERABLE_WINDOW_RULE);
     switch (processorType) {
     case PUSHDOWN:
       planner.addRule(LuceneFilterRule.DEFAULT.toRule());
+      // Fall-through
     case ADVANCED:
       planner.addRule(LuceneTableScanRule.DEFAULT.toRule());
       planner.addRule(LuceneEnumerableConverterRule.DEFAULT.toRule());
+      break;
     case SIMPLE:
-      planner.addRule(CoreRules.PROJECT_TO_CALC);
-      planner.addRule(CoreRules.FILTER_TO_CALC);
       planner.addRule(EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_CALC_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_JOIN_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_SORT_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_LIMIT_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_AGGREGATE_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_VALUES_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_UNION_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_MINUS_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_INTERSECT_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_MATCH_RULE);
-      planner.addRule(EnumerableRules.ENUMERABLE_WINDOW_RULE);
       break;
     default:
       throw new AssertionError();

@@ -21,8 +21,8 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.ConverterRule;
 import org.apache.calcite.rel.logical.LogicalTableScan;
 
+import com.github.zabetak.calcite.tutorial.LuceneTable;
 import com.github.zabetak.calcite.tutorial.operators.LuceneTableScan;
-import com.github.zabetak.calcite.tutorial.schema.LuceneTable;
 
 import java.util.Collections;
 

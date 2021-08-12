@@ -23,7 +23,7 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.hint.RelHint;
 import org.apache.lucene.search.MatchAllDocsQuery;
 
-import com.github.zabetak.calcite.tutorial.schema.LuceneTable;
+import com.github.zabetak.calcite.tutorial.LuceneTable;
 
 import java.util.List;
 

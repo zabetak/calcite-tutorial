@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.zabetak.calcite.tutorial.schema;
+package com.github.zabetak.calcite.tutorial;
 
 import org.apache.calcite.DataContext;
 import org.apache.calcite.linq4j.Enumerable;
@@ -25,8 +25,6 @@ import org.apache.calcite.schema.ScannableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 
-import com.github.zabetak.calcite.tutorial.LuceneEnumerable;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -34,14 +32,19 @@ import java.util.Map;
  * Table representing an Apache Lucene index.
  *
  * The table implements the {@link ScannableTable} interface and knows how to extract rows
- * from Lucene and map them to Calcite's internal representation.
+ * from Lucene and map them to Calcite's internal representation. Implementing this interface
+ * makes it easy to run queries over Lucene without introducing custom rules and operators.
+ *
+ * The {@link LuceneQueryProcessor.Type#SIMPLE} processor relies on the {@link ScannableTable}
+ * interface in order to work. The {@link LuceneQueryProcessor.Type#ADVANCED} and
+ * {@link LuceneQueryProcessor.Type#PUSHDOWN} variants do not need this interface so the respective
+ * methods can be removed.
  */
-public final class LuceneScannableTable extends AbstractTable
-    implements ScannableTable, LuceneTable {
+public final class LuceneTable extends AbstractTable implements ScannableTable {
   private final String indexPath;
   private final RelDataType dataType;
 
-  public LuceneScannableTable(String indexPath, RelDataType dataType) {
+  public LuceneTable(String indexPath, RelDataType dataType) {
     this.indexPath = indexPath;
     this.dataType = dataType;
   }
@@ -58,7 +61,10 @@ public final class LuceneScannableTable extends AbstractTable
     return typeFactory.copyType(dataType);
   }
 
-  @Override public String indexPath() {
+  /**
+   * Returns the path to the index in the filesystem.
+   */
+  public String indexPath() {
     return indexPath;
   }
 }
