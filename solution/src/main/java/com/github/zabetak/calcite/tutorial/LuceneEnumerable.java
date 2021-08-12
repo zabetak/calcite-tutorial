@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,10 +57,11 @@ import java.util.Map;
  */
 public class LuceneEnumerable extends AbstractEnumerable<Object[]> {
   private final String indexPath;
-  private final Map<String, SqlTypeName> fields;
+  private final LinkedHashMap<String, SqlTypeName> fields;
   private final String query;
 
-  public LuceneEnumerable(String indexPath, Map<String, SqlTypeName> fields, String query) {
+  public LuceneEnumerable(String indexPath, LinkedHashMap<String, SqlTypeName> fields,
+      String query) {
     this.indexPath = indexPath;
     this.fields = fields;
     this.query = query;

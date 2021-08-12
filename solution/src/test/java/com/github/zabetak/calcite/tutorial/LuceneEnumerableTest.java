@@ -36,7 +36,6 @@ import java.sql.Date;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -68,8 +67,8 @@ public class LuceneEnumerableTest {
     }
   }
 
-  private static Map<String, SqlTypeName> typedFields(String table, Set<String> fields) {
-    Map<String, SqlTypeName> fieldToType = new LinkedHashMap<>();
+  private static LinkedHashMap<String, SqlTypeName> typedFields(String table, Set<String> fields) {
+    LinkedHashMap<String, SqlTypeName> fieldToType = new LinkedHashMap<>();
     TpchTable t = TpchTable.valueOf(table.toUpperCase());
     JavaTypeFactory typeFactory = new JavaTypeFactoryImpl();
     for (TpchTable.Column c : t.columns) {

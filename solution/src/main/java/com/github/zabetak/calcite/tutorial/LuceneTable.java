@@ -26,7 +26,6 @@ import org.apache.calcite.schema.impl.AbstractTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Table representing an Apache Lucene index.
@@ -50,7 +49,7 @@ public final class LuceneTable extends AbstractTable implements ScannableTable {
   }
 
   @Override public Enumerable<Object[]> scan(final DataContext root) {
-    Map<String, SqlTypeName> fields = new LinkedHashMap<>();
+    LinkedHashMap<String, SqlTypeName> fields = new LinkedHashMap<>();
     for (RelDataTypeField f : dataType.getFieldList()) {
       fields.put(f.getName(), f.getType().getSqlTypeName());
     }
