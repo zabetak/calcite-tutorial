@@ -30,7 +30,7 @@ import org.apache.calcite.adapter.enumerable.EnumerableRel;
  * @see LuceneRel#LUCENE
  * @see EnumerableConvention
  */
-public final class LuceneEnumerableConverter {
+public final class LuceneToEnumerableConverter {
   // TODO 1. Extend ConverterImpl
   // TODO 2. Implement RelNode.copy
   // TODO 3. Implement EnumerableRel interface

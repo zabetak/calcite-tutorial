@@ -21,26 +21,26 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.ConverterRule;
 
 import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
-import com.github.zabetak.calcite.tutorial.operators.LuceneEnumerableConverter;
+import com.github.zabetak.calcite.tutorial.operators.LuceneToEnumerableConverter;
 
 import static com.github.zabetak.calcite.tutorial.operators.LuceneRel.LUCENE;
 
 /**
  * Planner rule converting any kind of {@link LuceneRel} expression to
  * {@link org.apache.calcite.adapter.enumerable.EnumerableRel} by creating a
- * {@link LuceneEnumerableConverter}.
+ * {@link LuceneToEnumerableConverter}.
  */
-public final class LuceneEnumerableConverterRule extends ConverterRule {
-  public LuceneEnumerableConverterRule(Config config) {
+public final class LuceneToEnumerableConverterRule extends ConverterRule {
+  public LuceneToEnumerableConverterRule(Config config) {
     super(config);
   }
 
   @Override public RelNode convert(RelNode rel) {
-    return new LuceneEnumerableConverter(rel);
+    return new LuceneToEnumerableConverter(rel);
   }
 
   public static final Config DEFAULT = Config.INSTANCE
       .withConversion(LuceneRel.class,
           LUCENE, EnumerableConvention.INSTANCE, "LuceneEnumerableConverterRule")
-      .withRuleFactory(LuceneEnumerableConverterRule::new);
+      .withRuleFactory(LuceneToEnumerableConverterRule::new);
 }

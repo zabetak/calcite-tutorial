@@ -57,7 +57,7 @@ import org.apache.calcite.sql2rel.StandardConvertletTable;
 import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
-import com.github.zabetak.calcite.tutorial.rules.LuceneEnumerableConverterRule;
+import com.github.zabetak.calcite.tutorial.rules.LuceneToEnumerableConverterRule;
 import com.github.zabetak.calcite.tutorial.rules.LuceneFilterRule;
 import com.github.zabetak.calcite.tutorial.rules.LuceneTableScanRule;
 
@@ -209,7 +209,7 @@ public class LuceneQueryProcessor {
       // Fall-through
     case ADVANCED:
       planner.addRule(LuceneTableScanRule.DEFAULT.toRule());
-      planner.addRule(LuceneEnumerableConverterRule.DEFAULT.toRule());
+      planner.addRule(LuceneToEnumerableConverterRule.DEFAULT.toRule());
       break;
     case SIMPLE:
       planner.addRule(EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE);

@@ -16,15 +16,15 @@
  */
 package com.github.zabetak.calcite.tutorial.rules;
 
-import com.github.zabetak.calcite.tutorial.operators.LuceneEnumerableConverter;
+import com.github.zabetak.calcite.tutorial.operators.LuceneToEnumerableConverter;
 import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
 
 /**
  * Planner rule converting any kind of {@link LuceneRel} expression to
  * {@link org.apache.calcite.adapter.enumerable.EnumerableRel} by creating a
- * {@link LuceneEnumerableConverter}.
+ * {@link LuceneToEnumerableConverter}.
  */
-public final class LuceneEnumerableConverterRule {
+public final class LuceneToEnumerableConverterRule {
   // TODO 1. Extend ConverterRule
   // TODO 2. Implement convert method
   // TODO 3. Create DEFAULT configuration for rule

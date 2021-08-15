@@ -52,8 +52,8 @@ import java.util.Map;
  * @see LuceneRel#LUCENE
  * @see org.apache.calcite.adapter.enumerable.EnumerableConvention
  */
-public final class LuceneEnumerableConverter extends ConverterImpl implements EnumerableRel {
-  public LuceneEnumerableConverter(RelNode child) {
+public final class LuceneToEnumerableConverter extends ConverterImpl implements EnumerableRel {
+  public LuceneToEnumerableConverter(RelNode child) {
     super(child.getCluster(),
         ConventionTraitDef.INSTANCE,
         child.getCluster().traitSetOf(EnumerableConvention.INSTANCE),
@@ -61,7 +61,7 @@ public final class LuceneEnumerableConverter extends ConverterImpl implements En
   }
 
   @Override public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
-    return new LuceneEnumerableConverter(inputs.get(0));
+    return new LuceneToEnumerableConverter(inputs.get(0));
   }
 
   @Override public Result implement(EnumerableRelImplementor implementor, Prefer pref) {
