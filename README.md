@@ -78,3 +78,12 @@ optimization rules.
 In `PUSHDOWN` mode, the query processor combines operators with different characteristics and is
 also capable of pushing simple filtering conditions to the underlying engine by introducing
 custom rules, expression transformations, and additional operators.
+
+## More information
+
+* License: <a href="LICENSE">Apache Software License, Version 2.0</a>
+* Developers list:
+  <a href="mailto:dev@calcite.apache.org">dev at calcite.apache.org</a>
+  (<a href="https://mail-archives.apache.org/mod_mbox/calcite-dev/">archive</a>,
+  <a href="mailto:dev-subscribe@calcite.apache.org">subscribe</a>)
+* Issues: https://github.com/zabetak/calcite-tutorial/issues
