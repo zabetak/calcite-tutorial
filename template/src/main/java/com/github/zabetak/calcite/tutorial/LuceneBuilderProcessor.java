@@ -75,7 +75,7 @@ public class LuceneBuilderProcessor {
       String indexPath =
           Paths.get(DatasetIndexer.INDEX_LOCATION, "tpch", tpchTable.name()).toString();
       // TODO 1. Uncomment the following line to add table to the schema
-      // schema.add(tpchTable.name(), new LuceneScannableTable(indexPath, typeBuilder.build()));
+      // schema.add(tpchTable.name(), new LuceneTable(indexPath, typeBuilder.build()));
     }
 
     RelOptCluster cluster = newCluster(typeFactory);
