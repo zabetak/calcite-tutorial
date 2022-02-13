@@ -22,6 +22,8 @@ import org.apache.calcite.adapter.enumerable.EnumerableInterpretable;
 import org.apache.calcite.adapter.enumerable.EnumerableRel;
 import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
+import org.apache.calcite.adapter.jdbc.JdbcRules;
+import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
@@ -43,6 +45,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.runtime.Bindable;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Table;
+import org.apache.calcite.schema.impl.AbstractSchema;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
@@ -57,9 +61,11 @@ import org.apache.calcite.sql2rel.StandardConvertletTable;
 import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
 import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
-import com.github.zabetak.calcite.tutorial.rules.LuceneToEnumerableConverterRule;
 import com.github.zabetak.calcite.tutorial.rules.LuceneFilterRule;
 import com.github.zabetak.calcite.tutorial.rules.LuceneTableScanRule;
+import com.github.zabetak.calcite.tutorial.rules.LuceneToEnumerableConverterRule;
+
+import javax.sql.DataSource;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -67,6 +73,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -100,12 +107,19 @@ public class LuceneQueryProcessor {
      * The processor relies on {@link org.apache.calcite.adapter.enumerable.EnumerableConvention}
      * and {@link LuceneRel#LUCENE} to execute queries over Lucene.
      */
-    PUSHDOWN
+    PUSHDOWN,
+    /**
+     * Query processor for JDBC datasources.
+     *
+     * The processor relies on {@link org.apache.calcite.adapter.jdbc.JdbcConvention} and
+     * {@link EnumerableConvention} to execute queries over JDBC datasources.
+     */
+    JDBC
   }
 
   public static void main(String[] args) throws Exception {
     if (args.length != 2) {
-      System.out.println("Usage: runner [SIMPLE|ADVANCED] SQL_FILE");
+      System.out.println("Usage: runner [SIMPLE|ADVANCED|PUSHDOWN|JDBC] SQL_FILE");
       System.exit(-1);
     }
     Type pType = Type.valueOf(args[0]);
@@ -136,7 +150,8 @@ public class LuceneQueryProcessor {
     System.out.println(sqlQuery);
 
     // Create the schema and table data types
-    CalciteSchema schema = CalciteSchema.createRootSchema(true);
+    CalciteSchema rootSchema = CalciteSchema.createRootSchema(true);
+    Map<String, Table> luceneTables = new HashMap<>();
     RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl();
     for (TpchTable table : TpchTable.values()) {
       RelDataTypeFactory.Builder builder = new RelDataTypeFactory.Builder(typeFactory);
@@ -145,9 +160,21 @@ public class LuceneQueryProcessor {
         builder.add(column.name, type.getSqlTypeName()).nullable(true);
       }
       String indexPath = DatasetIndexer.INDEX_LOCATION + "/tpch/" + table.name();
-      schema.add(table.name(), new LuceneTable(indexPath, builder.build()));
+      luceneTables.put(table.name(), new LuceneTable(indexPath, builder.build()));
     }
-
+    rootSchema.add("lucene", new AbstractSchema(){
+      @Override protected Map<String, Table> getTableMap() {
+        return luceneTables;
+      }
+    });
+    DataSource dataSource =
+        JdbcSchema.dataSource("jdbc:hsqldb:res:foodmart", "org.hsqldb.jdbc.JDBCDriver", "sa", "");
+    // It was a bit tricky to find the understand why a schema parameter was needed
+    // It is also a bit counterintuitive the fact that we need to pass the rootSchema.plus; it is
+    // necessary cause we want to create an expression towards the parent to use with enumerable
+    // operators. The name we e.g., 'fm' must match the name we add the jdbc to root.
+    JdbcSchema jdbcSchema = JdbcSchema.create(rootSchema.plus(),"fm", dataSource,null,"foodmart");
+    rootSchema.add("fm", jdbcSchema);
     // Create an SQL parser
     SqlParser parser = SqlParser.create(sqlQuery);
     // Parse the query into an AST
@@ -159,7 +186,7 @@ public class LuceneQueryProcessor {
     Properties props = new Properties();
     props.setProperty(CalciteConnectionProperty.CASE_SENSITIVE.camelName(), "false");
     CalciteConnectionConfig config = new CalciteConnectionConfigImpl(props);
-    CalciteCatalogReader catalogReader = new CalciteCatalogReader(schema,
+    CalciteCatalogReader catalogReader = new CalciteCatalogReader(rootSchema,
         Collections.singletonList("bs"),
         typeFactory, config);
 
@@ -214,6 +241,8 @@ public class LuceneQueryProcessor {
     case SIMPLE:
       planner.addRule(EnumerableRules.ENUMERABLE_TABLE_SCAN_RULE);
       break;
+    case JDBC:
+      break;
     default:
       throw new AssertionError();
     }
@@ -239,7 +268,7 @@ public class LuceneQueryProcessor {
         phyPlan,
         EnumerableRel.Prefer.ARRAY);
     // Run the executable plan using a context simply providing access to the schema
-    return executablePlan.bind(new SchemaOnlyDataContext(schema));
+    return executablePlan.bind(new SchemaOnlyDataContext(rootSchema));
   }
 
   private static RelOptCluster newCluster(RelDataTypeFactory factory) {
