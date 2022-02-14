@@ -166,14 +166,14 @@ public class LuceneQueryProcessor {
         return luceneTables;
       }
     });
+    String jdbcurl = "jdbc:hsqldb:file:" + DatasetLoader.JDBC_HSQLDB_PATH;
     DataSource dataSource =
-        JdbcSchema.dataSource("jdbc:hsqldb:res:foodmart", "org.hsqldb.jdbc.JDBCDriver", "sa", "");
-    // It was a bit tricky to find the understand why a schema parameter was needed
+        JdbcSchema.dataSource(jdbcurl, "org.hsqldb.jdbc.JDBCDriver", "sa", "");
     // It is also a bit counterintuitive the fact that we need to pass the rootSchema.plus; it is
     // necessary cause we want to create an expression towards the parent to use with enumerable
-    // operators. The name we e.g., 'fm' must match the name we add the jdbc to root.
-    JdbcSchema jdbcSchema = JdbcSchema.create(rootSchema.plus(),"fm", dataSource,null,"foodmart");
-    rootSchema.add("fm", jdbcSchema);
+    // operators. The name we e.g., 'hyper' must match the name we add the jdbc to root.
+    JdbcSchema jdbcSchema = JdbcSchema.create(rootSchema.plus(), "hyper", dataSource, null, null);
+    rootSchema.add("hyper", jdbcSchema);
     // Create an SQL parser
     SqlParser parser = SqlParser.create(sqlQuery);
     // Parse the query into an AST
