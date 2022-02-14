@@ -31,7 +31,10 @@ public class DatasetLoader {
   public static final Path LUCENE_INDEX_PATH = Paths.get("target", "tpch", "lucene");
   public static final Path JDBC_HSQLDB_PATH = Paths.get("target", "tpch", "hsqldb", "tpchdb");
 
-  public static void main(String[] args) throws IOException, SQLException {
+  public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
+    // Load the driver explicitly cause it is not registered automatically when the loader is
+    // executed via the indexer fat jar file.
+    Class.forName("org.hsqldb.jdbcDriver");
     new LuceneDatasetLoader(LUCENE_INDEX_PATH).load();
     String url = "jdbc:hsqldb:file:" + JDBC_HSQLDB_PATH;
     new JDBCDatasetLoader(url, "SA", "").load();
