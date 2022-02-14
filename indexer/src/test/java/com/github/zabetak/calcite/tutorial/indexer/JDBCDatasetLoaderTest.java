@@ -20,7 +20,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -36,13 +35,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class JDBCDatasetLoaderTest {
 
-  private static final String JDBC_URL = "jdbc:hsqldb:mem:" + Paths.get("tpch", "tpchdb");
+  private static final String JDBC_URL = "jdbc:hsqldb:mem:tpch";
   private static final String JDBC_USER = "SA";
   private static final String JDBC_PWD = "";
 
   @BeforeAll
   static void loadTpchDataset() throws SQLException, IOException {
-    JDBCDatasetLoader.main(new String[]{JDBC_URL, JDBC_USER, JDBC_PWD});
+    new JDBCDatasetLoader(JDBC_URL, JDBC_USER, JDBC_PWD).load();
   }
 
   @Test

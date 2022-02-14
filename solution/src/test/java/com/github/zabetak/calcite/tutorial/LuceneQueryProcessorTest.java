@@ -28,7 +28,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,11 +45,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tests for end to end tests over Apache Lucene.
  */
 public class LuceneQueryProcessorTest {
+  private static final Path INDEX_LOCATION = Paths.get("target", "tpch", "lucene");
 
   @BeforeAll
-  static void indexTpchDataset() throws IOException, URISyntaxException {
+  static void indexTpchDataset() throws IOException {
     // The dataset may already be there but doesn't hurt much to re-index it
-    LuceneDatasetLoader.main(new String[]{});
+    new LuceneDatasetLoader(INDEX_LOCATION).load();
   }
 
   @ParameterizedTest

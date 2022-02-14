@@ -31,8 +31,7 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -46,22 +45,27 @@ import java.time.format.DateTimeFormatter;
  * </ul>
  *
  * The indexer reads data from CSV files and creates a single Lucene index per file. The indexes
- * are created under the {@link #INDEX_LOCATION} directory and (with the current configuration)
+ * are created under the {@link #indexPath} directory and (with the current configuration)
  * are overwritten every time the indexer runs.
  */
 public class LuceneDatasetLoader {
-  public static final String INDEX_LOCATION = "target";
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-  public static void main(String[] args) throws IOException, URISyntaxException {
+  private final Path indexPath;
+
+  public LuceneDatasetLoader(Path indexPath) {
+    this.indexPath = indexPath;
+  }
+
+  public void load() throws IOException {
     for (TpchTable table : TpchTable.values()) {
-      indexTable("tpch", table);
+      indexTable(table);
     }
   }
 
-  private static void indexTable(final String dataset, TpchTable table)
+  private void indexTable(TpchTable table)
       throws IOException {
-    try (Directory indexDir = FSDirectory.open(Paths.get(INDEX_LOCATION, dataset, table.name()))) {
+    try (Directory indexDir = FSDirectory.open(indexPath.resolve(table.name()))) {
       IndexWriterConfig writerConfig = new IndexWriterConfig(new StandardAnalyzer());
       writerConfig.setOpenMode(OpenMode.CREATE);
       try (IndexWriter writer = new IndexWriter(indexDir, writerConfig)) {
@@ -81,7 +85,7 @@ public class LuceneDatasetLoader {
     }
   }
 
-  private static void indexValue(Document doc, TpchTable.Column column, String value) {
+  private void indexValue(Document doc, TpchTable.Column column, String value) {
     if (value.equals("")) {
       return;
     }

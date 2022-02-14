@@ -31,7 +31,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -44,10 +45,12 @@ import java.util.stream.Stream;
  */
 public class LuceneEnumerableTest {
 
+  private static final Path INDEX_LOCATION = Paths.get("target", "tpch", "lucene");
+  
   @BeforeAll
-  static void indexTpchDataset() throws IOException, URISyntaxException {
+  static void indexTpchDataset() throws IOException {
     // The dataset may already be there but doesn't hurt much to re-index it
-    LuceneDatasetLoader.main(new String[]{});
+    new LuceneDatasetLoader(INDEX_LOCATION).load();
   }
 
   @ParameterizedTest(name = "table={0}, projection={1}, filter={2}")
@@ -55,7 +58,7 @@ public class LuceneEnumerableTest {
   void testSelectFilterQueryReturnsCorrectRow(String table, Set<String> fields, String query,
       Object[] expectedRow) {
     LuceneEnumerable enumerable = new LuceneEnumerable(
-        "target/tpch/" + table, typedFields(table, fields), query);
+        INDEX_LOCATION.resolve(table).toString(), typedFields(table, fields), query);
     List<Object[]> expected = Collections.singletonList(expectedRow);
     assertContentEquals(expected, enumerable.toList());
   }

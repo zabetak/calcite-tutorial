@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 
 /**
  * A class for loading predefined datasets in a JDBC compliant database.
@@ -36,13 +37,18 @@ import java.sql.Statement;
  * statements and then inserting the data via series of INSERT INTO statements.
  */
 public class JDBCDatasetLoader {
+  private final String url;
+  private final String user;
+  private final String pwd;
 
-  public static void main(String[] args) throws SQLException, IOException {
-    if (args.length != 3) {
-      System.out.println("Usage: loader jdbcurl jdbcuser jdbcpassword");
-      System.exit(-1);
-    }
-    try (Connection conn = DriverManager.getConnection(args[0], args[1], args[2])) {
+  public JDBCDatasetLoader(String url, String user, String pwd) {
+    this.url = Objects.requireNonNull(url, "JDBC URL cannot be null");
+    this.user = user;
+    this.pwd = pwd;
+  }
+
+  public void load() throws SQLException, IOException {
+    try (Connection conn = DriverManager.getConnection(url, user, pwd)) {
       for (TpchTable table : TpchTable.values()) {
         try (Statement stmt = conn.createStatement()) {
           stmt.execute(table.getCreateDDL());

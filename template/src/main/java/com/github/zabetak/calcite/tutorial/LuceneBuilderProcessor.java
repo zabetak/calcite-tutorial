@@ -47,10 +47,9 @@ import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.dialect.AnsiSqlDialect;
 import org.apache.calcite.tools.RelBuilder;
 
-import com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader;
+import com.github.zabetak.calcite.tutorial.indexer.DatasetLoader;
 import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,8 +71,7 @@ public class LuceneBuilderProcessor {
       for (TpchTable.Column c : tpchTable.columns) {
         typeBuilder.add(c.name, typeFactory.createJavaType(c.type).getSqlTypeName());
       }
-      String indexPath =
-          Paths.get(LuceneDatasetLoader.INDEX_LOCATION, "tpch", tpchTable.name()).toString();
+      String indexPath = DatasetLoader.LUCENE_INDEX_PATH.resolve(tpchTable.name()).toString();
       // TODO 1. Uncomment the following line to add table to the schema
       // schema.add(tpchTable.name(), new LuceneScannableTable(indexPath, typeBuilder.build()));
     }

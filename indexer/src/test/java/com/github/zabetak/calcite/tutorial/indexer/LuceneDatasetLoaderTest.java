@@ -28,12 +28,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader.INDEX_LOCATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -42,9 +41,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 public class LuceneDatasetLoaderTest {
 
+  private static final Path INDEX_LOCATION = Paths.get("target", "tpch", "lucene");
+
   @BeforeAll
-  static void indexTpchDataset() throws IOException, URISyntaxException {
-    LuceneDatasetLoader.main(new String[]{});
+  static void indexTpchDataset() throws IOException {
+    new LuceneDatasetLoader(INDEX_LOCATION).load();
   }
 
   @Test
@@ -59,7 +60,7 @@ public class LuceneDatasetLoaderTest {
     expectedCounts.put(TpchTable.REGION, 5);
     expectedCounts.put(TpchTable.SUPPLIER, 10);
     for (TpchTable table : TpchTable.values()) {
-      IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(INDEX_LOCATION, "tpch", table.name())));
+      IndexReader reader = DirectoryReader.open(FSDirectory.open(INDEX_LOCATION.resolve(table.name())));
       IndexSearcher searcher = new IndexSearcher(reader);
       assertEquals(expectedCounts.get(table), searcher.count(new MatchAllDocsQuery()), table.name());
     }
@@ -68,7 +69,7 @@ public class LuceneDatasetLoaderTest {
   @Test
   void testTpchDatasetExtractData() throws IOException {
     for (TpchTable table : TpchTable.values()) {
-      IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(INDEX_LOCATION, "tpch", table.name())));
+      IndexReader reader = DirectoryReader.open(FSDirectory.open(INDEX_LOCATION.resolve(table.name())));
       IndexSearcher searcher = new IndexSearcher(reader);
       for (ScoreDoc d : searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE).scoreDocs) {
         for (TpchTable.Column c : table.columns) {
