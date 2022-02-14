@@ -37,7 +37,7 @@
           <archive>
             <manifest>
               <mainClass>
-                com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer
+                com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader
               </mainClass>
             </manifest>
           </archive>

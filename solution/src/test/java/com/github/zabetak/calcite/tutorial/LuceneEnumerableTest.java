@@ -20,7 +20,7 @@ import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 
-import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
+import com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader;
 import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 import com.google.common.collect.ImmutableSet;
 
@@ -47,7 +47,7 @@ public class LuceneEnumerableTest {
   @BeforeAll
   static void indexTpchDataset() throws IOException, URISyntaxException {
     // The dataset may already be there but doesn't hurt much to re-index it
-    DatasetIndexer.main(new String[]{});
+    LuceneDatasetLoader.main(new String[]{});
   }
 
   @ParameterizedTest(name = "table={0}, projection={1}, filter={2}")

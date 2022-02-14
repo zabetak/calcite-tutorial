@@ -19,7 +19,7 @@ package com.github.zabetak.calcite.tutorial;
 import org.apache.calcite.linq4j.Enumerable;
 import org.apache.calcite.sql.parser.SqlParseException;
 
-import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
+import com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader;
 import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -50,7 +50,7 @@ public class LuceneQueryProcessorTest {
   @BeforeAll
   static void indexTpchDataset() throws IOException, URISyntaxException {
     // The dataset may already be there but doesn't hurt much to re-index it
-    DatasetIndexer.main(new String[]{});
+    LuceneDatasetLoader.main(new String[]{});
   }
 
   @ParameterizedTest

@@ -33,18 +33,18 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer.INDEX_LOCATION;
+import static com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader.INDEX_LOCATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * Tests for {@link DatasetIndexer}.
+ * Tests for {@link LuceneDatasetLoader}.
  */
-public class DatasetIndexerTest {
+public class LuceneDatasetLoaderTest {
 
   @BeforeAll
   static void indexTpchDataset() throws IOException, URISyntaxException {
-    DatasetIndexer.main(new String[]{});
+    LuceneDatasetLoader.main(new String[]{});
   }
 
   @Test

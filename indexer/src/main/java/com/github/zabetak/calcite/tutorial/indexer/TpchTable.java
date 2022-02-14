@@ -202,6 +202,71 @@ public enum TpchTable {
   }
 
   /**
+   * Returns an SQL DDL statement for creating this table in a relational database.
+   */
+  public String getCreateDDL() {
+    StringBuilder sql = new StringBuilder();
+    sql.append("CREATE TABLE ");
+    sql.append(name());
+    sql.append(" (");
+    for (int i = 0; i < columns.size(); i++) {
+      Column c = columns.get(i);
+      if (i > 0) {
+        sql.append(',');
+      }
+      sql.append(c.name);
+      sql.append(' ');
+      if (Integer.class == c.type) {
+        sql.append("INTEGER");
+      } else if (String.class == c.type) {
+        // Type could be more fine-grained but for the purpose of the tutorial it is fine to
+        // overestimate
+        sql.append("VARCHAR(2000)");
+      } else if (Double.class == c.type) {
+        sql.append("DOUBLE");
+      } else if (Date.class == c.type) {
+        sql.append("DATE");
+      } else {
+        throw new IllegalStateException();
+      }
+    }
+    sql.append(")");
+    return sql.toString();
+  }
+
+  /**
+   * Returns an SQL DML statement for inserting a single row with the specified values in this
+   * table.
+   */
+  public String getInsertDML(String[] values) {
+    StringBuilder sql = new StringBuilder();
+    sql.append("INSERT INTO ").append(name()).append(" VALUES (");
+    for (int i = 0; i < columns.size() && i < values.length; i++) {
+      Column c = columns.get(i);
+      if (i > 0) {
+        sql.append(',');
+      }
+      if (Integer.class == c.type) {
+        sql.append(values[i]);
+      } else if (String.class == c.type) {
+        sql.append('\'');
+        sql.append(values[i]);
+        sql.append('\'');
+      } else if (Double.class == c.type) {
+        sql.append(values[i]);
+      } else if (Date.class == c.type) {
+        sql.append('\'');
+        sql.append(values[i]);
+        sql.append('\'');
+      } else {
+        throw new IllegalStateException();
+      }
+    }
+    sql.append(')');
+    return sql.toString();
+  }
+
+  /**
    * A table column defined by a name and type.
    */
   public static final class Column {

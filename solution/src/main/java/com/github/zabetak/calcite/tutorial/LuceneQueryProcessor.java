@@ -22,7 +22,6 @@ import org.apache.calcite.adapter.enumerable.EnumerableInterpretable;
 import org.apache.calcite.adapter.enumerable.EnumerableRel;
 import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
-import org.apache.calcite.adapter.jdbc.JdbcRules;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
@@ -58,7 +57,7 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 
-import com.github.zabetak.calcite.tutorial.indexer.DatasetIndexer;
+import com.github.zabetak.calcite.tutorial.indexer.LuceneDatasetLoader;
 import com.github.zabetak.calcite.tutorial.indexer.TpchTable;
 import com.github.zabetak.calcite.tutorial.operators.LuceneRel;
 import com.github.zabetak.calcite.tutorial.rules.LuceneFilterRule;
@@ -159,7 +158,7 @@ public class LuceneQueryProcessor {
         RelDataType type = typeFactory.createJavaType(column.type);
         builder.add(column.name, type.getSqlTypeName()).nullable(true);
       }
-      String indexPath = DatasetIndexer.INDEX_LOCATION + "/tpch/" + table.name();
+      String indexPath = LuceneDatasetLoader.INDEX_LOCATION + "/tpch/" + table.name();
       luceneTables.put(table.name(), new LuceneTable(indexPath, builder.build()));
     }
     rootSchema.add("lucene", new AbstractSchema(){

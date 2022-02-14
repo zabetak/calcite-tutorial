@@ -29,11 +29,8 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import au.com.bytecode.opencsv.CSVReader;
-
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.sql.Date;
@@ -52,9 +49,7 @@ import java.time.format.DateTimeFormatter;
  * are created under the {@link #INDEX_LOCATION} directory and (with the current configuration)
  * are overwritten every time the indexer runs.
  */
-public class DatasetIndexer {
-  private static final char DELIMITER = '|';
-  private static final String DATASET_LOCATION = "data";
+public class LuceneDatasetLoader {
   public static final String INDEX_LOCATION = "target";
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -66,24 +61,22 @@ public class DatasetIndexer {
 
   private static void indexTable(final String dataset, TpchTable table)
       throws IOException {
-    final String tablePath =
-        DATASET_LOCATION + "/" + dataset + "/" + table.name().toLowerCase().concat(".csv");
     try (Directory indexDir = FSDirectory.open(Paths.get(INDEX_LOCATION, dataset, table.name()))) {
       IndexWriterConfig writerConfig = new IndexWriterConfig(new StandardAnalyzer());
       writerConfig.setOpenMode(OpenMode.CREATE);
       try (IndexWriter writer = new IndexWriter(indexDir, writerConfig)) {
-        try (CSVReader reader = new CSVReader(getResourceAsReader(tablePath), DELIMITER)) {
-          String[] values = reader.readNext();
-          while (values != null) {
-            Document doc = new Document();
-            for (int i = 0; i < table.columns.size() && i < values.length; i++) {
-              TpchTable.Column c = table.columns.get(i);
-              indexValue(doc, c, values[i]);
-            }
-            writer.addDocument(doc);
-            values = reader.readNext();
+        TpchCSVReader.of(table).forEach(values -> {
+          Document doc = new Document();
+          for (int i = 0; i < table.columns.size() && i < values.length; i++) {
+            TpchTable.Column c = table.columns.get(i);
+            indexValue(doc, c, values[i]);
           }
-        }
+          try {
+            writer.addDocument(doc);
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+        });
       }
     }
   }
@@ -109,10 +102,5 @@ public class DatasetIndexer {
     } else {
       throw new IllegalStateException();
     }
-  }
-
-  private static Reader getResourceAsReader(String path) {
-    return new InputStreamReader(
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(path));
   }
 }
