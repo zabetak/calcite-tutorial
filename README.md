@@ -23,16 +23,16 @@ for the [BOSS'21 VLDB workshop](https://boss-workshop.github.io/boss-2021/).
 
 In this tutorial, we demonstrate the main components of Calcite and how they interact with each
 other. To do this we build, step-by-step, a fully fledged query processor for data residing
-in Lucene indexes, and gradually introduce various extensions covering some common use-cases
-appearing in practice.
+in multiple data sources. We chose Apache Lucene (NoSQL) and HyperSQL (SQL) as storage engines to
+demonstrate how Calcite can be used on top of SQL and NoSQL systems.
 
 The project has three modules:
-* `indexer`, containing the necessary code to populate some sample dataset(s) into Lucene to
-demonstrate the capabilities of the query processor; 
+* `indexer`, containing the necessary code to populate some sample dataset(s) into selected storage
+engines to demonstrate the capabilities of the query processor; 
 * `solution`, containing the material of the tutorial fully implemented along with a few unit tests
 ensuring the correctness of the code;   
 * `template`, containing only the skeleton and documentation of selected classes, which the
-attendees can use to follow the real-time implementation of the Lucene query processor.
+attendees can use to follow the real-time implementation of the query processor.
 
 ## Requirements
 
@@ -44,7 +44,7 @@ To compile the project, run:
 
     ./mvnw package -DskipTests 
 
-To load/index the TPC-H dataset in Lucene, run:
+To load/index the TPC-H dataset in Lucene and HyperSQL, run:
 
     java -jar indexer/target/indexer-1.0-SNAPSHOT-jar-with-dependencies.jar
     
