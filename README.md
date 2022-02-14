@@ -87,3 +87,11 @@ custom rules, expression transformations, and additional operators.
   (<a href="https://mail-archives.apache.org/mod_mbox/calcite-dev/">archive</a>,
   <a href="mailto:dev-subscribe@calcite.apache.org">subscribe</a>)
 * Issues: https://github.com/zabetak/calcite-tutorial/issues
+
+## TODO
+* Rename LuceneQueryProcessor and update documentation
+* Update README with more details about JDBC
+* Add todo steps in tutorial
+* Run a few more queries
+* Add explicit rules and convention for JDBC processor
+* Add unit tests for JDBC processor
